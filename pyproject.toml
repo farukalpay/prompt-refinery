@@ -1,0 +1,46 @@
+[build-system]
+requires = ["setuptools>=69", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "prompt-refinery"
+version = "0.2.0"
+description = "Retrieval-grounded prompt refinement as a reusable Python library, CLI, and MCP server."
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "GPL-3.0-only" }
+authors = [
+  { name = "Alpay" }
+]
+dependencies = [
+  "datasets>=2.20.0",
+  "huggingface_hub>=0.23.0",
+  "numpy>=1.26.0",
+  "requests>=2.32.0"
+]
+keywords = ["prompt", "retrieval", "nlp", "mcp", "llm"]
+classifiers = [
+  "Programming Language :: Python :: 3",
+  "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+  "Operating System :: OS Independent"
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=8.2.0"
+]
+
+[project.scripts]
+prompt-refinery = "prompt_refinery.cli:main"
+prompt-refinery-mcp = "prompt_refinery.mcp_server:main"
+
+[tool.setuptools]
+include-package-data = false
+
+[tool.setuptools.packages.find]
+include = ["prompt_refinery*"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+python_files = ["test_*.py"]
+addopts = "-q"

@@ -1,123 +1,282 @@
 # Prompt Refinery
 
-Prompt Refinery is a retrieval-grounded prompt generator that turns short user requests into production-ready prompts.
+Retrieval-grounded prompt refinement engine as a reusable Python **library**, production CLI, and **MCP stdio endpoint**.
 
-It combines:
-- semantic retrieval over a real prompt corpus (`fka/prompts.chat`)
-- slot-aware support examples from MASSIVE (`AmazonScience/massive`)
-- session memory reuse for repeated user patterns
-- multi-stage model editing for complete, copy-paste-ready output
+This project avoids hardcoded prompt templates and static keyword routing. Instead, it derives intent structure from retrieval evidence, then runs one repair/polish generation pass.
 
-## Why this project
+## Why this architecture
 
-Most prompt tools either:
-- use static templates and break on edge cases, or
-- generate from scratch and lose style consistency.
+Most prompt systems break in one of two ways:
 
-Prompt Refinery keeps both quality and control by selecting a strong base prompt from data, adapting it to the user request, then polishing for clarity and completeness.
+1. Overfitted template maps (fast, brittle).
+2. Freeform generation (flexible, low control).
 
-## Key capabilities
+Prompt Refinery keeps both control and adaptability:
 
-- **Model-driven retrieval and editing pipeline** (no topic-specific rule tables)
-- **Schema-validated dataset ingestion** for both prompts and slot data
-- **Robust MASSIVE loading** even when script-based dataset loading is disabled
-- **Chunked embeddings** for very long source prompts
-- **Intent extraction + polish pass** to better match requested output style at low-to-medium cost
-- **Persistent memory** in SQLite for better repeat performance
+- Retrieval-first candidate selection from real corpora.
+- Data-derived intent spec (objective, audience, locale evidence, slot coverage).
+- Single generation call for repair + polish.
+- Full runtime artifacts for inspectability (`last_result.json`, SQLite memory).
 
-## Architecture
+## Pipeline (research-style view)
 
-1. Build local SQLite tables from datasets.
-2. Create / load embedding indices for prompts, slot examples, and memory.
-3. Retrieve top supports for the user input.
-4. Run a low-cost intent extraction model pass.
-5. Run the main prompt-repair model pass.
-6. Run a low-cost polish pass for completeness and readability.
-7. Save outputs + metadata for reuse.
+```text
+user request
+   |
+   +--> embedding (openai/text-embedding-3-small)
+   |      |
+   |      +--> prompt candidates       (fka/prompts.chat)
+   |      +--> slot support examples   (AmazonScience/massive)
+   |      +--> memory neighbors        (local sqlite)
+   |
+   +--> data-driven intent spec (0 extra LLM calls)
+   |      objective, deliverable type, audience, language, slots, standards
+   |
+   +--> single repair/polish call (mistralai/mistral-nemo)
+   |
+   +--> final prompt + persisted runtime evidence
+```
 
-## Quick start
+## Installation
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
 pip install -r requirements.txt
+```
+
+Create `.env` in project root:
+
+```env
+OPENROUTER_API_KEY=your_api_key_here
+# Optional overrides
+# LLM_API_BASE_URL=https://openrouter.ai/api/v1
+# EMBED_MODEL=openai/text-embedding-3-small
+# REPAIR_MODEL=mistralai/mistral-nemo
+```
+
+You can bootstrap from template:
+
+```bash
 cp .env.example .env
 ```
 
-Set your key in `.env`:
+## CLI usage
 
-```env
-OPENAI_API_KEY=your_api_key_here
-```
+After install, both commands work:
 
-Run:
+- `prompt-refinery ...` (console script)
+- `python -m prompt_refinery ...` (module entrypoint)
+- `./scripts/start_cli.sh ...` (repo-local launcher)
+
+### 1) Default run
 
 ```bash
-python3 prompt_refinery.py "Write a concise cold email to pitch our AI analytics tool to a logistics startup CEO."
+prompt-refinery "Write a concise cold email to pitch our AI analytics tool to a logistics startup CEO."
 ```
 
-The latest result is written to:
-- `runtime_db/exports/last_prompt.txt`
-- `runtime_db/exports/last_result.json`
+### 2) Explicit quality targets (CLI priority)
 
-## Configuration
-
-Environment variables:
-
-- `OPENAI_API_KEY` (required)
-- `LLM_API_BASE_URL` (optional, default: `https://openrouter.ai/api/v1`)
-- `EMBED_MODEL` (optional)
-- `REPAIR_MODEL` (optional)
-- `INTENT_MODEL` (optional)
-- `POLISH_MODEL` (optional)
-
-Default profile is tuned for low-to-medium cost:
-- embedding: `openai/text-embedding-3-small`
-- repair: `mistralai/mistral-nemo`
-- intent/polish: `openai/gpt-4o-mini`
-
-## Example (full output style)
-
-Input:
-
-```text
-Write a concise cold email to pitch our AI analytics tool to a logistics startup CEO.
+```bash
+prompt-refinery "Design a landing page prompt for B2B fintech onboarding" \
+  --targets "Fully specified output" "No unresolved placeholders" "Clear actionable wording"
 ```
 
-Output style (fully written, not truncated, no placeholder fragments):
+### 3) Custom standards for a domain
 
-```text
-ROLE: Act as an "A-List" Direct Response Copywriter (Gary Halbert or David Ogilvy style).
-
-GOAL: Write a cold email to a logistics startup CEO with the objective of selling our AI analytics tool.
-CLIENT PROBLEM: Manual reporting delays decisions, hides route-level inefficiencies, and inflates operating cost.
-MY SOLUTION: An AI analytics platform that unifies shipment, route, and fulfillment data into real-time decision support.
-
-EMAIL ENGINEERING:
-
-Subject Line: Generate 5 options that create immediate curiosity or clear business benefit.
-
-The Hook: The first sentence must be a pattern interrupt that demonstrates concrete understanding of logistics operations.
-
-The Value Proposition (The Meat): Connect the pain point to the solution using a "Before vs. After" structure.
-
-Objection Handling: Defuse expected concerns around implementation time and budget.
-
-CTA (Call to Action): Use a low-friction next step (e.g., "Are you open to a 5-minute walkthrough video this week?").
-
-TONE: Professional, conversational, confident, brief (under 150 words).
+```bash
+prompt-refinery "Create a SOC2 incident response prompt" \
+  --targets "Audit-traceable steps" "Owner+deadline per action" "No ambiguous verbs"
 ```
+
+### 4) JSON output mode
+
+```bash
+prompt-refinery "Build a launch checklist prompt" --json
+```
+
+## Quality-target precedence
+
+Priority order:
+
+1. `--targets` CLI argument
+2. `refinery_profile.json`
+3. `QUALITY_TARGETS` environment variable (JSON array)
+4. Built-in defaults
+
+Default profile (`refinery_profile.json`):
+
+```json
+{
+  "quality_targets": [
+    "Fully specified output",
+    "No unresolved placeholders",
+    "Clear actionable wording"
+  ]
+}
+```
+
+## Library usage
+
+```python
+from pathlib import Path
+from prompt_refinery import RefineryEngine, RuntimePaths, RuntimeSettings
+
+project_dir = Path.cwd()
+paths = RuntimePaths.from_project_dir(project_dir)
+settings = RuntimeSettings.from_env(project_dir)
+
+engine = RefineryEngine(settings=settings, paths=paths)
+try:
+    result = engine.run(
+        user_text="Create a migration playbook prompt for PostgreSQL cutover",
+        quality_targets=[
+            "Fully specified output",
+            "No unresolved placeholders",
+            "Rollback steps included"
+        ]
+    )
+    print(result["repaired_prompt"])
+finally:
+    engine.close()
+```
+
+## MCP endpoint (stdio)
+
+### Start server
+
+```bash
+prompt-refinery-mcp --project-dir /absolute/path/to/prompt-refinery
+```
+
+or with startup script:
+
+```bash
+./scripts/start_mcp_stdio.sh --project-dir /absolute/path/to/prompt-refinery
+```
+
+### Example MCP client wiring (Claude Desktop / compatible hosts)
+
+```json
+{
+  "mcpServers": {
+    "prompt-refinery": {
+      "command": "prompt-refinery-mcp",
+      "args": ["--project-dir", "/absolute/path/to/prompt-refinery"]
+    }
+  }
+}
+```
+
+### Exposed MCP tool
+
+- `refine_prompt`
+
+Input schema:
+
+- `user_text` (string, required)
+- `quality_targets` (string array, optional)
+- `export_outputs` (bool, optional, default `true`)
+
+### Example MCP JSON-RPC call (`tools/call`)
+
+```json
+{
+  "jsonrpc": "2.0",
+  "id": 7,
+  "method": "tools/call",
+  "params": {
+    "name": "refine_prompt",
+    "arguments": {
+      "user_text": "prepare an incident postmortem template for platform outages",
+      "quality_targets": [
+        "Fully specified output",
+        "No unresolved placeholders",
+        "Clear actionable wording"
+      ],
+      "export_outputs": true
+    }
+  }
+}
+```
+
+## Local validation snapshot (2026-04-13)
+
+### Test suite
+
+```bash
+$ python3 -m pytest
+........                                                                 [100%]
+8 passed
+```
+
+### CLI surface check
+
+```bash
+$ python3 -m prompt_refinery --help
+usage: prompt-refinery [-h] [--targets T [T ...]] [--profile FILE]
+                       [--project-dir DIR] [--json] [--no-gui]
+                       [user_text ...]
+```
+
+### MCP surface check
+
+```bash
+$ python3 -m prompt_refinery.mcp_server --help
+usage: prompt-refinery-mcp [-h] [--project-dir PROJECT_DIR]
+```
+
+## Optimization notes
+
+Structural changes in this revision:
+
+- Monolithic script moved to importable package (`prompt_refinery/`).
+- MASSIVE locale/config coverage is discovered dynamically (no fixed locale seed list).
+- Query embedding is now computed **once per request** and reused across prompt/slot/memory retrieval.
+- Runtime config and paths are explicit contracts (`RuntimeSettings`, `RuntimePaths`).
+- CLI is thin; core logic is library-safe.
+- MCP endpoint shares the same engine path as CLI/library (single source of behavior).
+
+## Runtime artifacts
+
+Generated under `runtime_db/`:
+
+- `exports/last_prompt.txt`
+- `exports/last_result.json`
+- `runtime.sqlite3`
+- dataset cache + embedding indices
 
 ## Repository layout
 
 ```text
-prompt_refinery.py      # main application
-requirements.txt        # Python dependencies
-.env.example            # sample local configuration
-runtime_db/             # local runtime artifacts (gitignored)
+prompt_refinery/
+  __init__.py
+  __main__.py
+  cli.py
+  core.py
+  mcp_server.py
+scripts/
+  start_cli.sh
+  start_mcp_stdio.sh
+tests/
+  test_intent_spec.py
+  test_mcp_server.py
+  test_quality_targets.py
+refinery_profile.json
+.env.example
+pyproject.toml
+requirements.txt
+requirements-dev.txt
+LICENSE
+README.md
 ```
 
-## Notes
+## Requirements
 
-- This project stores runtime data locally and keeps secrets out of Git with `.gitignore`.
-- If you run from a desktop app without CLI args, a small GUI input/output fallback is available.
+- Python 3.10+
+- OpenRouter-compatible API key (`OPENROUTER_API_KEY`)
+
+## License
+
+This project is licensed under **GNU General Public License v3.0**.
+See [LICENSE](./LICENSE).
