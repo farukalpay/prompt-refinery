@@ -68,32 +68,45 @@ After install, both commands work:
 - `python -m prompt_refinery ...` (module entrypoint)
 - `./scripts/start_cli.sh ...` (repo-local launcher)
 
-1. **Default run**
-Shows prompt-only output and writes runtime artifacts.
+### 1) Default run
+Prompt-only output + runtime artifacts.
 
 ```bash
-prompt-refinery "Write a concise cold email to pitch our AI analytics tool to a logistics startup CEO."
+prompt-refinery \
+  "Write a concise cold email to pitch our AI analytics tool to a logistics startup CEO."
 ```
 
-2. **Explicit quality targets (CLI priority)**
+### 2) Explicit quality targets (CLI priority)
 `--targets` overrides profile/env/default targets.
 
 ```bash
-prompt-refinery "Design a landing page prompt for B2B fintech onboarding" --targets "Fully specified output" "No unresolved placeholders" "Clear actionable wording"
+prompt-refinery \
+  "Design a landing page prompt for B2B fintech onboarding" \
+  --targets \
+    "Fully specified output" \
+    "No unresolved placeholders" \
+    "Clear actionable wording"
 ```
 
-3. **Custom standards for a domain**
-Use domain-specific constraints directly from CLI.
+### 3) Custom standards for a domain
+Domain-specific quality constraints from CLI.
 
 ```bash
-prompt-refinery "Create a SOC2 incident response prompt" --targets "Audit-traceable steps" "Owner+deadline per action" "No ambiguous verbs"
+prompt-refinery \
+  "Create a SOC2 incident response prompt" \
+  --targets \
+    "Audit-traceable steps" \
+    "Owner+deadline per action" \
+    "No ambiguous verbs"
 ```
 
-4. **JSON output mode**
-Prints full structured result to stdout.
+### 4) JSON output mode
+Print full structured result to stdout.
 
 ```bash
-prompt-refinery "Build a launch checklist prompt" --json
+prompt-refinery \
+  "Build a launch checklist prompt" \
+  --json
 ```
 
 ## Input -> Output examples
