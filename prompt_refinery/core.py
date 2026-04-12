@@ -357,7 +357,10 @@ def load_env_file(path: Path) -> None:
         value = value.strip()
         if len(value) >= 2 and value[0] == value[-1] and value[0] in {"'", '"'}:
             value = value[1:-1]
-        os.environ.setdefault(key, value)
+        # Keep explicit shell values, but allow .env to fill missing/blank ones.
+        current = os.getenv(key)
+        if current is None or not current.strip():
+            os.environ[key] = value
 
 
 def first_env(*keys: str) -> str:
