@@ -1,0 +1,17 @@
+{
+  "jsonrpc": "2.0",
+  "id": 21,
+  "method": "tools/call",
+  "params": {
+    "name": "refine_prompt",
+    "arguments": {
+      "user_text": "prepare an incident postmortem template for platform outages",
+      "quality_targets": [
+        "Fully specified output",
+        "No unresolved placeholders",
+        "Clear actionable wording"
+      ],
+      "export_outputs": true
+    }
+  }
+}

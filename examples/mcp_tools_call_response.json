@@ -1,0 +1,12 @@
+{
+  "jsonrpc": "2.0",
+  "id": 21,
+  "result": {
+    "content": [
+      {
+        "type": "text",
+        "text": "{\n  \"chosen_act\": \"Write concise executive summary\",\n  \"repaired_prompt\": \"ROLE: You are a postmortem facilitator...\",\n  \"intent_spec\": {\"language\": \"en-US\"},\n  \"quality_targets\": [\"Fully specified output\", \"No unresolved placeholders\", \"Clear actionable wording\"],\n  \"artifacts\": {\"result_json\": \".../runtime_db/exports/last_result.json\"}\n}"
+      }
+    ]
+  }
+}

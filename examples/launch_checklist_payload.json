@@ -1,0 +1,71 @@
+{
+  "created_at": "2026-04-13T00:42:11.338Z",
+  "user_text": "Build a launch checklist prompt",
+  "chosen_prompt_row_id": 184,
+  "chosen_act": "Create launch planning assistant",
+  "memory_reused": false,
+  "notes": "Selected candidate with strongest launch-ops constraints and adapted for checklist-first execution.",
+  "used_values": [
+    {
+      "name": "deliverable",
+      "value": "launch checklist"
+    },
+    {
+      "name": "style",
+      "value": "actionable, owner-driven"
+    }
+  ],
+  "intent_spec": {
+    "objective": "Create launch planning assistant",
+    "deliverable_type": "instruction",
+    "audience": "general",
+    "language": "en-US",
+    "dominant_intents": [
+      "calendar",
+      "reminder"
+    ],
+    "relevant_slots": [
+      "date",
+      "time",
+      "event_name"
+    ],
+    "quality_targets": [
+      "Fully specified output",
+      "No unresolved placeholders",
+      "Clear actionable wording"
+    ]
+  },
+  "repaired_prompt": "ROLE: You are a launch operations lead. Build a launch checklist with owners, due dates, dependencies, and measurable completion criteria...",
+  "meta": {
+    "api_base_url": "https://openrouter.ai/api/v1",
+    "embed_model": "openai/text-embedding-3-small",
+    "repair_model": "mistralai/mistral-nemo",
+    "prompt_top_k": 6,
+    "slot_top_k": 14,
+    "memory_top_k": 6,
+    "quality_targets": [
+      "Fully specified output",
+      "No unresolved placeholders",
+      "Clear actionable wording"
+    ],
+    "prompt_candidate_ids": [
+      184,
+      56,
+      907,
+      412,
+      73,
+      615
+    ],
+    "slot_support_ids": [
+      1480,
+      930,
+      571,
+      112,
+      2010
+    ],
+    "memory_support_ids": [
+      41,
+      37
+    ]
+  }
+}

@@ -96,6 +96,88 @@ Prints full structured result to stdout.
 prompt-refinery "Build a launch checklist prompt" --json
 ```
 
+## Input -> Output examples
+
+### Featured repaired prompt (full)
+
+**Input prompt**
+
+```text
+Create a SOC2 incident response prompt
+```
+
+**Quality targets**
+
+```text
+Fully specified output
+No unresolved placeholders
+Clear actionable wording
+```
+
+**Output (full repaired prompt)**
+
+```text
+ROLE: You are an incident commander and compliance-focused response planner for a B2B SaaS platform.
+
+PRIMARY GOAL:
+Create a SOC2-ready incident response runbook that can be executed under pressure and audited later without ambiguity.
+
+OUTPUT FORMAT (MANDATORY):
+Return exactly 6 sections in this order.
+
+1) Incident Classification
+- Define severity levels Sev-1 to Sev-4.
+- For each severity, include: customer impact threshold, security/data impact threshold, escalation owner, and max response start time.
+
+2) First 60 Minutes Timeline
+- Provide a minute-by-minute action plan at these checkpoints: T+0, T+5, T+10, T+15, T+30, T+45, T+60.
+- Each checkpoint must include:
+  - Action
+  - Owner role
+  - Evidence artifact to capture
+  - Hard deadline
+
+3) Containment, Eradication, Recovery
+- Containment: immediate risk-reduction actions and rollback criteria.
+- Eradication: root-cause elimination tasks and verification steps.
+- Recovery: service restoration checklist with validation gates.
+- Every task must have an explicit owner and completion criterion.
+
+4) Communication Pack
+- Internal update template (engineering + security + leadership).
+- Customer-facing status update template.
+- Executive summary template for post-incident briefing.
+- Include required fields: incident ID, impact scope, current status, next update time, accountable owner.
+
+5) SOC2 Evidence Checklist
+- Evidence categories: detection, triage, decision logs, approvals, remediation, customer communication, postmortem actions.
+- For each category, specify:
+  - Required artifact type
+  - System/source of truth
+  - Responsible owner role
+  - Retention expectation
+
+6) Post-Incident Review and Corrective Actions
+- Provide postmortem structure: timeline, root cause, contributing factors, control gaps, corrective actions.
+- Corrective actions must include: owner, due date, risk priority, verification method, and closure criteria.
+
+QUALITY CONSTRAINTS:
+- No unresolved placeholders.
+- No vague verbs such as "handle", "check", or "fix" without measurable criteria.
+- Every operational step must be executable by a specific role at a specific time.
+- Use concise, direct, and audit-ready language.
+
+STYLE:
+Professional, explicit, and operations-focused. Avoid motivational or generic wording.
+```
+
+### Full payload files (JSON not inlined here)
+
+- Full sample payloads are in [examples/README.md](./examples/README.md)
+- CLI JSON payload sample: [examples/launch_checklist_payload.json](./examples/launch_checklist_payload.json)
+- MCP request sample: [examples/mcp_tools_call_request.json](./examples/mcp_tools_call_request.json)
+- MCP response sample: [examples/mcp_tools_call_response.json](./examples/mcp_tools_call_response.json)
+
 ## Quality-target precedence
 
 Priority order:
