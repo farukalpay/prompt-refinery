@@ -60,6 +60,22 @@ You can bootstrap from template:
 cp .env.example .env
 ```
 
+## Quickstart (single script)
+
+```bash
+git clone https://github.com/farukalpay/prompt-refinery.git
+cd prompt-refinery
+python3 -m venv .venv
+source .venv/bin/activate
+pip install -r requirements.txt
+cp .env.example .env
+python3 quickstart.py
+```
+
+`quickstart.py` asks for:
+- your input prompt
+- 3 quality targets (defaults prefilled, Enter to keep)
+
 ## CLI usage
 
 After install, both commands work:
@@ -127,7 +143,10 @@ No unresolved placeholders
 Clear actionable wording
 ```
 
-**Output (full repaired prompt)**
+**Output (full repaired prompt, boxed)**
+
+<details>
+<summary><strong>Show full repaired prompt</strong></summary>
 
 ```text
 ROLE: You are an incident commander and compliance-focused response planner for a B2B SaaS platform.
@@ -183,6 +202,7 @@ QUALITY CONSTRAINTS:
 STYLE:
 Professional, explicit, and operations-focused. Avoid motivational or generic wording.
 ```
+</details>
 
 ### Full payload files (JSON not inlined here)
 
@@ -358,6 +378,7 @@ tests/
   test_intent_spec.py
   test_mcp_server.py
   test_quality_targets.py
+quickstart.py
 refinery_profile.json
 .env.example
 pyproject.toml
