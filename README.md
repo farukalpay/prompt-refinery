@@ -20,21 +20,20 @@ Prompt Refinery keeps both control and adaptability:
 
 ## Pipeline (research-style view)
 
-```text
-user request
-   |
-   +--> embedding (openai/text-embedding-3-small)
-   |      |
-   |      +--> prompt candidates       (fka/prompts.chat)
-   |      +--> slot support examples   (AmazonScience/massive)
-   |      +--> memory neighbors        (local sqlite)
-   |
-   +--> data-driven intent spec (0 extra LLM calls)
-   |      objective, deliverable type, audience, language, slots, standards
-   |
-   +--> single repair/polish call (mistralai/mistral-nemo)
-   |
-   +--> final prompt + persisted runtime evidence
+```mermaid
+flowchart TD
+    A["User request"] --> B["Embedding<br/>openai/text-embedding-3-small"]
+
+    B --> C["Prompt candidates<br/>fka/prompts.chat"]
+    B --> D["Slot support examples<br/>AmazonScience/massive"]
+    B --> E["Memory neighbors<br/>local SQLite"]
+
+    C --> F["Data-driven intent spec<br/>(0 extra LLM calls)"]
+    D --> F
+    E --> F
+
+    F --> G["Single repair/polish call<br/>mistralai/mistral-nemo"]
+    G --> H["Final prompt + persisted runtime evidence"]
 ```
 
 ## Installation
@@ -69,27 +68,29 @@ After install, both commands work:
 - `python -m prompt_refinery ...` (module entrypoint)
 - `./scripts/start_cli.sh ...` (repo-local launcher)
 
-### 1) Default run
+1. **Default run**
+Shows prompt-only output and writes runtime artifacts.
 
 ```bash
 prompt-refinery "Write a concise cold email to pitch our AI analytics tool to a logistics startup CEO."
 ```
 
-### 2) Explicit quality targets (CLI priority)
+2. **Explicit quality targets (CLI priority)**
+`--targets` overrides profile/env/default targets.
 
 ```bash
-prompt-refinery "Design a landing page prompt for B2B fintech onboarding" \
-  --targets "Fully specified output" "No unresolved placeholders" "Clear actionable wording"
+prompt-refinery "Design a landing page prompt for B2B fintech onboarding" --targets "Fully specified output" "No unresolved placeholders" "Clear actionable wording"
 ```
 
-### 3) Custom standards for a domain
+3. **Custom standards for a domain**
+Use domain-specific constraints directly from CLI.
 
 ```bash
-prompt-refinery "Create a SOC2 incident response prompt" \
-  --targets "Audit-traceable steps" "Owner+deadline per action" "No ambiguous verbs"
+prompt-refinery "Create a SOC2 incident response prompt" --targets "Audit-traceable steps" "Owner+deadline per action" "No ambiguous verbs"
 ```
 
-### 4) JSON output mode
+4. **JSON output mode**
+Prints full structured result to stdout.
 
 ```bash
 prompt-refinery "Build a launch checklist prompt" --json
