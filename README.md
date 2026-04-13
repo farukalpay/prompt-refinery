@@ -18,7 +18,7 @@ Prompt Refinery keeps both control and adaptability:
 - Single generation call for repair + polish.
 - Full runtime artifacts for inspectability (`last_result.json`, SQLite memory).
 
-## Pipeline (research-style view)
+## Pipeline
 
 ```mermaid
 flowchart TD
