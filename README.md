@@ -204,7 +204,7 @@ Professional, explicit, and operations-focused. Avoid motivational or generic wo
 ```
 </details>
 
-### Full payload files (JSON not inlined here)
+### Full payload files 
 
 - Full sample payloads are in [examples/README.md](./examples/README.md)
 - CLI JSON payload sample: [examples/launch_checklist_payload.json](./examples/launch_checklist_payload.json)
